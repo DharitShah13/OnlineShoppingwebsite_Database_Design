@@ -1,0 +1,319 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `mydb` ;
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
+USE `mydb` ;
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Person`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Person` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Person` (
+  `FullName` VARCHAR(45) NOT NULL,
+  `Email` VARCHAR(45) NOT NULL,
+  `Username` VARCHAR(45) NOT NULL,
+  `Password` VARCHAR(45) NOT NULL,
+  `ConfirmPassword` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Username`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Organization`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Organization` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Organization` (
+  `OrganizationId` INT NOT NULL,
+  `OrganizationName` VARCHAR(45) NULL,
+  PRIMARY KEY (`OrganizationId`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`UserAccount`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`UserAccount` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`UserAccount` (
+  `UserId` INT NOT NULL,
+  `Password` VARCHAR(45) NOT NULL,
+  `Username` VARCHAR(45) NOT NULL,
+  `OrganizationId` INT NOT NULL,
+  PRIMARY KEY (`UserId`, `OrganizationId`, `Username`),
+  INDEX `fk_UserAccount_Person1_idx` (`Username` ASC),
+  INDEX `fk_UserAccount_Organization1_idx` (`OrganizationId` ASC),
+  CONSTRAINT `fk_UserAccount_Person1`
+    FOREIGN KEY (`Username`)
+    REFERENCES `mydb`.`Person` (`Username`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_UserAccount_Organization1`
+    FOREIGN KEY (`OrganizationId`)
+    REFERENCES `mydb`.`Organization` (`OrganizationId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Department`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Department` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Department` (
+  `Department_Id` INT NOT NULL,
+  `DepartmentName` VARCHAR(45) NOT NULL,
+  `DepartmentType` VARCHAR(45) NOT NULL,
+  `DepartmentDescription` VARCHAR(45) NULL,
+  `OrganizationId` INT NOT NULL,
+  PRIMARY KEY (`Department_Id`, `OrganizationId`),
+  INDEX `fk_Department_Organization2_idx` (`OrganizationId` ASC),
+  CONSTRAINT `fk_Department_Organization2`
+    FOREIGN KEY (`OrganizationId`)
+    REFERENCES `mydb`.`Organization` (`OrganizationId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Category`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Category` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Category` (
+  `CategoryId` INT NOT NULL,
+  `CategoryName` VARCHAR(45) NOT NULL,
+  `CategoryType` VARCHAR(45) NULL,
+  `Department_Id` INT NOT NULL,
+  PRIMARY KEY (`CategoryId`, `Department_Id`),
+  INDEX `fk_Category_Department1_idx` (`Department_Id` ASC),
+  CONSTRAINT `fk_Category_Department1`
+    FOREIGN KEY (`Department_Id`)
+    REFERENCES `mydb`.`Department` (`Department_Id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Products`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Products` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Products` (
+  `ProductId` INT NOT NULL,
+  `ProductName` VARCHAR(45) NOT NULL,
+  `ProductDescription` VARCHAR(45) NOT NULL,
+  `Price` VARCHAR(45) NOT NULL,
+  `Availablility` VARCHAR(45) NOT NULL,
+  `Reviews` VARCHAR(45) NULL,
+  `SupplierName` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`ProductId`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`CustomerOrder`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`CustomerOrder` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`CustomerOrder` (
+  `OrderId` INT NOT NULL,
+  `DateOfOrder` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`OrderId`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Address`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Address` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Address` (
+  `AddressId` INT NOT NULL,
+  `AddressType` VARCHAR(45) NOT NULL,
+  `ApartmentNumber` VARCHAR(45) NOT NULL,
+  `StreetName` VARCHAR(45) NOT NULL,
+  `City` VARCHAR(45) NOT NULL,
+  `State` VARCHAR(45) NOT NULL,
+  `ZipCode` VARCHAR(45) NOT NULL,
+  `OrderId` INT NOT NULL,
+  PRIMARY KEY (`AddressId`),
+  INDEX `fk_Address_CustomerOrder1_idx` (`OrderId` ASC),
+  CONSTRAINT `fk_Address_CustomerOrder1`
+    FOREIGN KEY (`OrderId`)
+    REFERENCES `mydb`.`CustomerOrder` (`OrderId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`PaymentMethod`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`PaymentMethod` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`PaymentMethod` (
+  `PaymentId` INT NOT NULL,
+  `PaymentType` VARCHAR(45) NOT NULL,
+  `CardNumber` VARCHAR(45) NOT NULL,
+  `ValidTill` VARCHAR(45) NOT NULL,
+  `CVV` VARCHAR(45) NOT NULL,
+  `OrderId` INT NOT NULL,
+  PRIMARY KEY (`PaymentId`),
+  INDEX `fk_PaymentMethod_CustomerOrder1_idx` (`OrderId` ASC),
+  CONSTRAINT `fk_PaymentMethod_CustomerOrder1`
+    FOREIGN KEY (`OrderId`)
+    REFERENCES `mydb`.`CustomerOrder` (`OrderId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Warehouse`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Warehouse` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Warehouse` (
+  `WarehouseId` INT NOT NULL,
+  `WarehouseName` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`WarehouseId`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Invoice`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Invoice` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Invoice` (
+  `InvoiceId` INT NOT NULL,
+  `PaymentMethod_PaymentId` INT NOT NULL,
+  `CustomerOrder_OrderId` INT NOT NULL,
+  `WarehouseId` INT NOT NULL,
+  PRIMARY KEY (`InvoiceId`, `CustomerOrder_OrderId`),
+  INDEX `fk_Invoice_PaymentMethod1_idx` (`PaymentMethod_PaymentId` ASC),
+  INDEX `fk_Invoice_CustomerOrder1_idx` (`CustomerOrder_OrderId` ASC),
+  INDEX `fk_Invoice_Warehouse1_idx` (`WarehouseId` ASC),
+  CONSTRAINT `fk_Invoice_PaymentMethod1`
+    FOREIGN KEY (`PaymentMethod_PaymentId`)
+    REFERENCES `mydb`.`PaymentMethod` (`PaymentId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Invoice_CustomerOrder1`
+    FOREIGN KEY (`CustomerOrder_OrderId`)
+    REFERENCES `mydb`.`CustomerOrder` (`OrderId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Invoice_Warehouse1`
+    FOREIGN KEY (`WarehouseId`)
+    REFERENCES `mydb`.`Warehouse` (`WarehouseId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Shipment`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Shipment` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Shipment` (
+  `ShipmentId` INT NOT NULL,
+  `ShipperName` VARCHAR(45) NOT NULL,
+  `Address` VARCHAR(45) NOT NULL,
+  `Date` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`ShipmentId`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`CustomerOrder_has_Products`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`CustomerOrder_has_Products` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`CustomerOrder_has_Products` (
+  `OrderId` INT NOT NULL,
+  `ProductId` INT NOT NULL,
+  INDEX `fk_CustomerOrder_has_Products_Products1_idx` (`ProductId` ASC),
+  INDEX `fk_CustomerOrder_has_Products_CustomerOrder1_idx` (`OrderId` ASC),
+  CONSTRAINT `fk_CustomerOrder_has_Products_CustomerOrder1`
+    FOREIGN KEY (`OrderId`)
+    REFERENCES `mydb`.`CustomerOrder` (`OrderId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_CustomerOrder_has_Products_Products1`
+    FOREIGN KEY (`ProductId`)
+    REFERENCES `mydb`.`Products` (`ProductId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Supplier`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Supplier` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Supplier` (
+  `SupplierId` INT NOT NULL,
+  `SupplierName` VARCHAR(45) NOT NULL,
+  `WarehouseId` INT NOT NULL,
+  `ShipmentId` INT NOT NULL,
+  PRIMARY KEY (`SupplierId`),
+  INDEX `fk_Supplier_Warehouse1_idx` (`WarehouseId` ASC),
+  INDEX `fk_Supplier_Shipment1_idx` (`ShipmentId` ASC),
+  CONSTRAINT `fk_Supplier_Warehouse1`
+    FOREIGN KEY (`WarehouseId`)
+    REFERENCES `mydb`.`Warehouse` (`WarehouseId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Supplier_Shipment1`
+    FOREIGN KEY (`ShipmentId`)
+    REFERENCES `mydb`.`Shipment` (`ShipmentId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`Category_has_Products`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`Category_has_Products` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Category_has_Products` (
+  `CategoryId` INT NOT NULL,
+  `ProductId` INT NOT NULL,
+  INDEX `fk_Category_has_Products_Products1_idx` (`ProductId` ASC),
+  INDEX `fk_Category_has_Products_Category1_idx` (`CategoryId` ASC),
+  CONSTRAINT `fk_Category_has_Products_Category1`
+    FOREIGN KEY (`CategoryId`)
+    REFERENCES `mydb`.`Category` (`CategoryId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Category_has_Products_Products1`
+    FOREIGN KEY (`ProductId`)
+    REFERENCES `mydb`.`Products` (`ProductId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
